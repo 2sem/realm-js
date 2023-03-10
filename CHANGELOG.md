@@ -1,3 +1,27 @@
+11.0.0-rc.1.1 Release notes (2023-3-24)
+=============================================================
+### Notes
+This is primarily a re-release of `11.0.0-rc.1`, which is compatible with React Native v0.69.0 or above.
+The release is based on Realm JS v10.19.5.
+
+### Enhancements
+* None.
+
+### Fixed
+* Installation will hang when using Node 19. ([#5136](https://github.com/realm/realm-js/issues/5136), since v10.13.0)
+
+### Compatibility
+* React Native equal to or above `v0.69.0` and above, since we're shipping binaries pre-compiled against the JSI ABI.
+* Atlas App Services.
+* Realm Studio v12.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+<!-- * Either mention core version or upgrade -->
+<!-- * Using Realm Core vX.Y.Z -->
+<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+
 11.0.0-rc.1 Release notes (2022-7-11)
 =============================================================
 ### Notes

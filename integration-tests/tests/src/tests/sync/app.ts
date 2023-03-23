@@ -223,7 +223,7 @@ describe("App", () => {
       let didFail = false;
       const user = await this.app.logIn(credentials).catch((err) => {
         expect(err.message).equals("invalid username/password");
-        expect(err.code).equals(50);
+        expect(err.code).equals(4349);
         didFail = true;
       });
       expect(user).to.be.undefined;

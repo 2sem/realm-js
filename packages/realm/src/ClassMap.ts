@@ -178,12 +178,12 @@ export class ClassMap {
       }
       return constructor as Constructor<T>;
     } else if (arg instanceof RealmObject) {
-      const result = this.get(arg.constructor.name);
-      assert(
-        result === arg.constructor || Object.getPrototypeOf(result) === arg.constructor,
-        "Constructor was not registered in the schema for this Realm",
-      );
-      return result as Constructor<T>;
+      try {
+        const result = this.get(arg.constructor.name);
+        return result as Constructor<T>;
+      } catch {
+        throw new Error("Constructor was not registered in the schema for this Realm");
+      }
     } else if (typeof arg === "function") {
       assert.extends(arg, RealmObject);
       assert.object(arg.schema, "schema static");

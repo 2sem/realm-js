@@ -57,6 +57,20 @@ function determineBehavior(config: Configuration, realmExists: boolean): OpenBeh
 }
 
 export class ProgressRealmPromise implements Promise<Realm> {
+  /**
+   * Cancels all async open tasks which has not yet been resolved.
+   * This also clears the internal set of unresolved tasks.
+   * @internal
+   */
+  public static cancelUnresolvedTasks() {
+    for (const task of ProgressRealmPromise.UNRESOLVED_TASKS) {
+      task.cancel();
+    }
+    ProgressRealmPromise.UNRESOLVED_TASKS.clear();
+  }
+
+  private static UNRESOLVED_TASKS = new Set<binding.AsyncOpenTask>();
+
   /** @internal */
   private task: binding.AsyncOpenTask | null = null;
   /** @internal */
@@ -80,8 +94,17 @@ export class ProgressRealmPromise implements Promise<Realm> {
         this.handle.resolve(realm);
       } else if (openBehavior === OpenRealmBehaviorType.DownloadBeforeOpen) {
         const { bindingConfig } = Realm.transformConfig(config);
-        this.task = binding.Realm.getSynchronizedRealm(bindingConfig);
-        this.task
+        // Construct an async open task
+        const task = binding.Realm.getSynchronizedRealm(bindingConfig);
+        this.task = task;
+        ProgressRealmPromise.UNRESOLVED_TASKS.add(task);
+        // If the promise handle gets rejected, we should cancel the open task
+        // to avoid consuming a thread safe reference which is no longer registered
+        this.handle.promise.catch(() => {
+          task.cancel();
+        });
+
+        task
           .start()
           .then(async (tsr) => {
             const realm = new Realm(config, {
@@ -97,7 +120,10 @@ export class ProgressRealmPromise implements Promise<Realm> {
             }
             return realm;
           })
-          .then(this.handle.resolve, this.handle.reject);
+          .then(this.handle.resolve, this.handle.reject)
+          .finally(() => {
+            ProgressRealmPromise.UNRESOLVED_TASKS.delete(task);
+          });
         // TODO: Consider storing the token returned here to unregister when the task gets cancelled,
         // if for some reason, that doesn't happen internally
         this.task.registerDownloadProgressNotifier(this.emitProgress);

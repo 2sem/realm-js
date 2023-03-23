@@ -265,6 +265,8 @@ export class Realm {
    * @private Not a part of the public API: It's primarily used from the library's tests.
    */
   public static clearTestState(): void {
+    ProgressRealmPromise.cancelUnresolvedTasks();
+
     // Close any realms not already closed
     for (const weakRealm of RETURNED_REALMS) {
       const realm = weakRealm.deref();
